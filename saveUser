@@ -1,0 +1,43 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+
+class FirebaseService{
+
+  final authInstance = FirebaseAuth.instance;
+  static final dataInstance = Firestore.instance;
+  final fireUser = dataInstance.collection("users");
+
+  // Connexion
+  Future<FirebaseUser> connexion(email,password)async{
+    final FirebaseUser user = await authInstance.signInWithEmailAndPassword(email: email, password: password);
+    return user;
+  }
+
+
+  // Inscription
+  Future<FirebaseUser> inscription(nom,prenom,email,password)async{
+    final FirebaseUser user = await authInstance.createUserWithEmailAndPassword(email: email, password: password);
+
+    Map<String,dynamic> map = {
+      "id":user.uid,
+      "nom":nom,
+      "prenom":prenom,
+      "email":email,
+      "password":password
+    };
+
+    addUser(user.uid,map);
+    return user;
+  }
+
+  // LogOut
+  logOut()=> authInstance.signOut();
+
+  addUser(uid,Map<String,dynamic> map){
+    fireUser.document(uid).setData(map);
+  }
+
+}
+
